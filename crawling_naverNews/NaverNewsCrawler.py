@@ -30,6 +30,6 @@ class NaverNewsCrawler:
         try:
             wb.save(file_name)
             print(f"{file_name}에 데이터 저장 완료")
+            print(f"{self.keyword}에 대한 기사 수집 완료")
         except Exception as e:
             print(e)
-        print(f"{self.keyword}에 대한 기사 수집 완료")

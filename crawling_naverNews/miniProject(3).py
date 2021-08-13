@@ -30,19 +30,24 @@ from NaverNewsCrawler import NaverNewsCrawler
 crawler = NaverNewsCrawler(input())
 
 #### 수집한 데이터를 저장할 엑셀 파일명을 input을 이용해 입력받아 ? 부분에 넣으세요
-crawler.get_news(input())
+crawler.get_news(input() + '.xlsx')
 
 #### 아래코드를 실행해 이메일 발송 기능에 필요한 모듈을 임포트하세요.
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
 import smtplib
 import re
+import json
+
 
 #### gmail 발송 기능에 필요한 계정 정보를 아래 코드에 입력하세요.
+with open('conf.json') as f:
+    config = json.load(f)
+
 SMTP_SERVER = 'smtp.gmail.com'
 SMTP_PORT = 465
-SMTP_USER = 'ing941226@gmail.com'
-SMTP_PASSWORD = 'vkdlTjs500%'
+SMTP_USER = config['email']
+SMTP_PASSWORD = config['password']
 
 #### 아래 코드를 실행해 메일 발송에 필요한 send_mail 함수를 만드세요.
 def send_mail(name, addr, subject, contents, attachment=None):
@@ -88,15 +93,16 @@ from openpyxl import load_workbook
 wb = load_workbook('email_list.xlsx')
 email_data = wb['Sheet1']
 
-email_area = email_data['B2:C101']          #'email_list.xlsx' 파일에서 이름과 이메일 데이터만 추출
-value_list=[]                               #cell.value값을 담기위해 빈 리스트 선언
-for col in email_area:
-    for cell in col:
+member_list = []                               #cell.value값을 담기위해 빈 리스트 선언
+for row in email_data.iter_rows(min_row = 2, min_col = 2):
+    cell_value = []
+    for cell in row:
         if cell.value:                      #cell값이 있다면,
-            value_list.append(cell.value)   #value_list에 추가
+            cell_value.append(cell.value)   #cell_value에 추가
+    member_list.append(cell_value)
 
 #### email_list.xlsx 파일을 읽어와 해당 사람들에게 수집한 뉴스 정보 엑셀 파일을 send_mail 함수를 이용해 전송하세요.
-list_length = int(len(value_list)/2)    #개선희망
+list_length = int(len(member_list))    #개선희망
 
 for i in range(0, list_length):
-    send_mail(email_area[i][0].value, email_area[i][1].value, '자동화 메일 테스트입니다', '오늘의 패스트캠퍼스 뉴스입니다.', 'fastcampus_news.xlsx')
+    send_mail(member_list[i][0], member_list[i][1], '자동화 메일 테스트입니다', '오늘의 패스트캠퍼스 뉴스입니다.', 'fastcampus_news.xlsx')
